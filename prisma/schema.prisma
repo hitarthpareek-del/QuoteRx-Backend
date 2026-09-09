@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  SUPERADMIN
+  ADMIN
+  MANAGER
+  EMPLOYEE
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+}
+
+enum CompanyStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Company {
+  id         String        @id @default(uuid())
+  name       String        @unique
+  logoUrl    String?
+  gstNumber  String?
+  cinNumber  String?
+  address    String?
+  status     CompanyStatus @default(ACTIVE)
+
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  users User[]
+
+  @@index([status])
+}
+
+model User {
+  id           String     @id @default(uuid())
+  name         String?
+  email        String     @unique
+  phoneNumber  String?
+  userPrefix   String?    @unique
+  passwordHash String?
+
+  role   UserRole
+  status UserStatus @default(PENDING)
+
+  emailVerified   Boolean   @default(false)
+  emailVerifiedAt DateTime?
+
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  adminId    String?
+  admin      User?   @relation("AdminUsers", fields: [adminId], references: [id])
+  adminUsers User[]  @relation("AdminUsers")
+
+  managerId String?
+  manager   User?   @relation("ManagerEmployees", fields: [managerId], references: [id])
+  employees User[]  @relation("ManagerEmployees")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lastLoginAt DateTime?
+
+  passwordSetupTokens PasswordSetupToken[]
+  passwordResetTokens PasswordResetToken[]
+  refreshTokens       RefreshToken[]
+
+  @@index([companyId])
+  @@index([adminId])
+  @@index([managerId])
+  @@index([role])
+  @@index([status])
+}
+
+model PasswordSetupToken {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash String @unique
+
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash String @unique
+
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model RefreshToken {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash String @unique
+
+  expiresAt DateTime
+  revokedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model AuditLog {
+  id String @id @default(uuid())
+
+  userId String?
+
+  action   String
+  entity   String?
+  entityId String?
+
+  ipAddress String?
+  userAgent String?
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
