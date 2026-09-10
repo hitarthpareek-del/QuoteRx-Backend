@@ -25,6 +25,75 @@ enum CompanyStatus {
   INACTIVE
 }
 
+enum ClientStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Client {
+  id               String       @id @default(uuid())
+
+  companyId        String
+  company          Company      @relation(fields: [companyId], references: [id])
+
+  companyName      String
+  companyAddress   String?
+
+  createdByUserId  String
+  createdBy        User         @relation("ClientCreatedBy", fields: [createdByUserId], references: [id])
+
+  status           ClientStatus @default(ACTIVE)
+
+  contacts         ClientContact[]
+  assignments      ClientAssignment[]
+
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([companyId])
+  @@index([createdByUserId])
+  @@index([status])
+  @@index([companyName])
+}
+
+model ClientContact {
+  id        String   @id @default(uuid())
+
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  name      String
+  phone     String?
+  email     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+}
+
+
+model ClientAssignment {
+  id           String   @id @default(uuid())
+
+  clientId     String
+  client       Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  managerId    String
+  manager      User     @relation("ClientManagerAssignments", fields: [managerId], references: [id])
+
+  assignedById String
+  assignedBy   User     @relation("ClientAssignedBy", fields: [assignedById], references: [id])
+
+  createdAt    DateTime @default(now())
+
+  @@unique([clientId, managerId])
+  @@index([clientId])
+  @@index([managerId])
+  @@index([assignedById])
+}
+
+
 model Company {
   id         String        @id @default(uuid())
   name       String        @unique
@@ -38,6 +107,7 @@ model Company {
   updatedAt  DateTime      @updatedAt
 
   users User[]
+  clients Client[]
 
   @@index([status])
 }
@@ -66,6 +136,10 @@ model User {
   managerId String?
   manager   User?   @relation("ManagerEmployees", fields: [managerId], references: [id])
   employees User[]  @relation("ManagerEmployees")
+
+  clientsCreated Client[] @relation("ClientCreatedBy")
+  clientManagerAssignments ClientAssignment[] @relation("ClientManagerAssignments")
+  clientAssignmentsMade ClientAssignment[] @relation("ClientAssignedBy")
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

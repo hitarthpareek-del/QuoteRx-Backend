@@ -19,32 +19,50 @@ const userRoutes =
 const companyRoutes =
     require("./modules/companies/routes/company.routes");
 
+const clientRoutes =
+    require("./modules/clients/routes/client.routes");
+
+
 const app = express();
 
-app.use(cors());
-app.use(express.json());
 
 /*
- * Root
- */
+|--------------------------------------------------------------------------
+| Middleware
+|--------------------------------------------------------------------------
+*/
+
+app.use(cors());
+
+app.use(express.json());
+
+
+/*
+|--------------------------------------------------------------------------
+| Root
+|--------------------------------------------------------------------------
+*/
+
 app.get("/", (req, res) => {
     res.json({
         success: true,
-        message: "Quotation Backend API is running"
+        message:
+            "Quotation Backend API is running"
     });
 });
 
+
 /*
- * Health
- */
+|--------------------------------------------------------------------------
+| Routes
+|--------------------------------------------------------------------------
+*/
+
 app.use(
     "/api/health",
     healthRoutes
 );
 
-/*
- * Authentication
- */
 app.use(
     "/api/auth",
     authRoutes
@@ -60,20 +78,20 @@ app.use(
     passwordResetRoutes
 );
 
-/*
- * Users
- */
 app.use(
     "/api/users",
     userRoutes
 );
 
-/*
- * Companies
- */
 app.use(
     "/api/companies",
     companyRoutes
 );
+
+app.use(
+    "/api/clients",
+    clientRoutes
+);
+
 
 module.exports = app;
