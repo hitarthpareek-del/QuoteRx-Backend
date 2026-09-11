@@ -1,0 +1,10 @@
+$kind: http-request
+name: Remove Client Assignment
+order: 9000
+method: DELETE
+url: '{{baseUrl}}/api/clients/:id/assignments/:assignmentId'
+pathVariables:
+  - key: id
+    value: client-id-here
+  - key: assignmentId
+    value: assignment-id-here

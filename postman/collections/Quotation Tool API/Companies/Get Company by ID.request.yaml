@@ -1,0 +1,8 @@
+$kind: http-request
+name: Get Company by ID
+order: 3000
+method: GET
+url: '{{baseUrl}}/api/companies/:id'
+pathVariables:
+  - key: id
+    value: company-id-here

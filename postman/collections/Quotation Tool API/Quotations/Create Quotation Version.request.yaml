@@ -1,0 +1,38 @@
+$kind: http-request
+name: Create Quotation Version
+order: 4000
+method: POST
+url: '{{baseUrl}}/api/quotations/:id/version'
+pathVariables:
+  - key: id
+    value: quotation-id-here
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "documentData": {
+        "items": [
+          {
+            "description": "Product A",
+            "quantity": 10,
+            "unitPrice": 100,
+            "total": 1000
+          }
+        ],
+        "subtotal": 1000,
+        "tax": 180,
+        "grandTotal": 1180
+      },
+      "quotationDate": "2024-01-15",
+      "expectedPODate": "2024-02-15",
+      "expiryDate": "2024-02-01",
+      "followUpDays": 7,
+      "emailTo": "client@example.com",
+      "emailCc": "cc@example.com",
+      "emailSubject": "Revised Quotation for your requirement",
+      "emailBody": "Please find attached the revised quotation.",
+      "pdfBase64": "base64-encoded-pdf-here"
+    }

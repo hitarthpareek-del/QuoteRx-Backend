@@ -1,0 +1,17 @@
+$kind: http-request
+name: Mark Quotation Lost
+order: 6000
+method: PATCH
+url: '{{baseUrl}}/api/quotations/:id/lost'
+pathVariables:
+  - key: id
+    value: quotation-id-here
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "lostRemarks": "Client went with a competitor"
+    }

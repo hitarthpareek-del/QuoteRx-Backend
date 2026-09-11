@@ -1,0 +1,18 @@
+$kind: http-request
+name: Get All Clients
+order: 1000
+method: GET
+url: '{{baseUrl}}/api/clients'
+queryParams:
+  - key: search
+    value: ''
+    disabled: true
+    description: Search by name or other fields
+  - key: status
+    value: ACTIVE
+    disabled: true
+    description: 'Filter by status: ACTIVE, INACTIVE'
+  - key: companyId
+    value: ''
+    disabled: true
+    description: Filter by company ID

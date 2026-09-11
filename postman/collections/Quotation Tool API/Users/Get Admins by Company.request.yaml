@@ -1,0 +1,9 @@
+$kind: http-request
+name: Get Admins by Company
+order: 6000
+method: GET
+url: '{{baseUrl}}/api/users/admins'
+queryParams:
+  - key: companyId
+    value: company-id-here
+    description: Required - filter admins by company

@@ -1,0 +1,5 @@
+$kind: http-request
+name: Refresh Token
+order: 2000
+method: POST
+url: '{{baseUrl}}/api/auth/refresh'

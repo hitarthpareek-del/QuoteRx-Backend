@@ -1,0 +1,17 @@
+$kind: http-request
+name: Create Client
+order: 2000
+method: POST
+url: '{{baseUrl}}/api/clients'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Client Company Ltd",
+      "email": "contact@clientcompany.com",
+      "phone": "+1234567890",
+      "address": "123 Main St, City, Country"
+    }

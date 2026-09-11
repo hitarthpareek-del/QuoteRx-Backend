@@ -1,0 +1,17 @@
+$kind: http-request
+name: Assign Client to Manager
+order: 6000
+method: POST
+url: '{{baseUrl}}/api/clients/:id/assign'
+pathVariables:
+  - key: id
+    value: client-id-here
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "managerId": "manager-id-here"
+    }

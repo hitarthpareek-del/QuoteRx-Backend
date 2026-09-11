@@ -1,0 +1,18 @@
+$kind: http-request
+name: Mark Quotation Successful
+order: 5000
+method: PATCH
+url: '{{baseUrl}}/api/quotations/:id/successful'
+pathVariables:
+  - key: id
+    value: quotation-id-here
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "successfulType": "PO",
+      "successfulReference": "PO-2024-001"
+    }

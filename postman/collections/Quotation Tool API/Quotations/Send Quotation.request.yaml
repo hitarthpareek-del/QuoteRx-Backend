@@ -1,0 +1,36 @@
+$kind: http-request
+name: Send Quotation
+order: 2000
+method: POST
+url: '{{baseUrl}}/api/quotations/send'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "clientId": "client-id-here",
+      "documentData": {
+        "items": [
+          {
+            "description": "Product A",
+            "quantity": 10,
+            "unitPrice": 100,
+            "total": 1000
+          }
+        ],
+        "subtotal": 1000,
+        "tax": 180,
+        "grandTotal": 1180
+      },
+      "quotationDate": "2024-01-15",
+      "expectedPODate": "2024-02-15",
+      "expiryDate": "2024-02-01",
+      "followUpDays": 7,
+      "emailTo": "client@example.com",
+      "emailCc": "cc@example.com",
+      "emailSubject": "Quotation for your requirement",
+      "emailBody": "Please find attached the quotation for your requirement.",
+      "pdfBase64": "base64-encoded-pdf-here"
+    }

@@ -1,0 +1,10 @@
+$kind: http-request
+name: Delete Client Contact
+order: 12000
+method: DELETE
+url: '{{baseUrl}}/api/clients/:clientId/contacts/:contactId'
+pathVariables:
+  - key: clientId
+    value: client-id-here
+  - key: contactId
+    value: contact-id-here

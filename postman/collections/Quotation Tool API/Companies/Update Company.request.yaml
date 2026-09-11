@@ -1,0 +1,18 @@
+$kind: http-request
+name: Update Company
+order: 4000
+method: PATCH
+url: '{{baseUrl}}/api/companies/:id'
+pathVariables:
+  - key: id
+    value: company-id-here
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Acme Corp Updated",
+      "quotationEmailFrom": "quotes@acmecorp.com"
+    }

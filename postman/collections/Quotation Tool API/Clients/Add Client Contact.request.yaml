@@ -1,0 +1,20 @@
+$kind: http-request
+name: Add Client Contact
+order: 10000
+method: POST
+url: '{{baseUrl}}/api/clients/:clientId/contacts'
+pathVariables:
+  - key: clientId
+    value: client-id-here
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Jane Doe",
+      "email": "jane@clientcompany.com",
+      "phone": "+1234567890",
+      "designation": "Procurement Manager"
+    }

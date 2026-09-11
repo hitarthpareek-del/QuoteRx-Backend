@@ -1,0 +1,15 @@
+$kind: collection
+name: Quotation Tool API
+description: 'API collection for the Quotation Tool backend. Base URL: {{baseUrl}}. Authentication uses Bearer tokens (JWT). Set the accessToken variable after login.'
+variables:
+  - key: baseUrl
+    value: 'http://localhost:5000'
+    description: Base URL of the API server
+  - key: accessToken
+    value: ''
+    description: JWT access token obtained from login
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{accessToken}}'

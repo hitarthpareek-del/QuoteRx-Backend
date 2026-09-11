@@ -1,0 +1,8 @@
+$kind: http-request
+name: Get Client Assignments
+order: 8000
+method: GET
+url: '{{baseUrl}}/api/clients/:id/assignments'
+pathVariables:
+  - key: id
+    value: client-id-here

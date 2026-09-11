@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Quotation PO Number
+order: 9000
+method: PATCH
+url: '{{baseUrl}}/api/quotations/:id/po'
+pathVariables:
+  - key: id
+    value: quotation-id-here
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "poNumber": "PO-2024-001"
+    }

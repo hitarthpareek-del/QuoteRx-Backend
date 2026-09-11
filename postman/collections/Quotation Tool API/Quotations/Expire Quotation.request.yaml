@@ -1,0 +1,8 @@
+$kind: http-request
+name: Expire Quotation
+order: 7000
+method: PATCH
+url: '{{baseUrl}}/api/quotations/:id/expired'
+pathVariables:
+  - key: id
+    value: quotation-id-here

@@ -1,0 +1,8 @@
+$kind: http-request
+name: Get Client by ID
+order: 3000
+method: GET
+url: '{{baseUrl}}/api/clients/:id'
+pathVariables:
+  - key: id
+    value: client-id-here

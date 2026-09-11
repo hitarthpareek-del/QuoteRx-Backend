@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Company Status
+order: 5000
+method: PATCH
+url: '{{baseUrl}}/api/companies/:id/status'
+pathVariables:
+  - key: id
+    value: company-id-here
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "status": "ACTIVE"
+    }

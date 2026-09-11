@@ -1,0 +1,8 @@
+$kind: http-request
+name: Get Quotation by ID
+order: 3000
+method: GET
+url: '{{baseUrl}}/api/quotations/:id'
+pathVariables:
+  - key: id
+    value: quotation-id-here

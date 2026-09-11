@@ -1,0 +1,5 @@
+$kind: http-request
+name: Check DB Health
+order: 1000
+method: GET
+url: '{{baseUrl}}/api/health/db'

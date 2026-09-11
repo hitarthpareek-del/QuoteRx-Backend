@@ -1,0 +1,8 @@
+$kind: http-request
+name: Assign Client to All Managers
+order: 7000
+method: POST
+url: '{{baseUrl}}/api/clients/:id/assign-all'
+pathVariables:
+  - key: id
+    value: client-id-here

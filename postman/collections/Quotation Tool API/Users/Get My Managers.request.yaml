@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get My Managers
+order: 9000
+method: GET
+url: '{{baseUrl}}/api/users/my-managers'

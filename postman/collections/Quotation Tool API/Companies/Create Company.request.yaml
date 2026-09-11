@@ -1,0 +1,15 @@
+$kind: http-request
+name: Create Company
+order: 2000
+method: POST
+url: '{{baseUrl}}/api/companies'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Acme Corp",
+      "quotationEmailFrom": "quotations@acmecorp.com"
+    }

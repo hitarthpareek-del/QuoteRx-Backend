@@ -1,0 +1,14 @@
+$kind: http-request
+name: Get Employees
+order: 8000
+method: GET
+url: '{{baseUrl}}/api/users/employees'
+queryParams:
+  - key: companyId
+    value: company-id-here
+    disabled: true
+    description: Filter by company
+  - key: managerId
+    value: manager-id-here
+    disabled: true
+    description: Filter by manager

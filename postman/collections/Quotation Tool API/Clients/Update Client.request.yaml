@@ -1,0 +1,20 @@
+$kind: http-request
+name: Update Client
+order: 4000
+method: PATCH
+url: '{{baseUrl}}/api/clients/:id'
+pathVariables:
+  - key: id
+    value: client-id-here
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Client Company Updated",
+      "email": "updated@clientcompany.com",
+      "phone": "+9876543210",
+      "address": "456 New St, City, Country"
+    }

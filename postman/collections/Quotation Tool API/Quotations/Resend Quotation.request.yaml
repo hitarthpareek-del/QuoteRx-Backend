@@ -1,0 +1,20 @@
+$kind: http-request
+name: Resend Quotation
+order: 8000
+method: POST
+url: '{{baseUrl}}/api/quotations/:id/resend'
+pathVariables:
+  - key: id
+    value: quotation-id-here
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "emailTo": "client@example.com",
+      "emailCc": "cc@example.com",
+      "emailSubject": "Quotation Reminder",
+      "emailBody": "Please find the quotation attached for your reference."
+    }

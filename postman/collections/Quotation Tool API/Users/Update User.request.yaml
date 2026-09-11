@@ -1,0 +1,20 @@
+$kind: http-request
+name: Update User
+order: 4000
+method: PATCH
+url: '{{baseUrl}}/api/users/:id'
+pathVariables:
+  - key: id
+    value: user-id-here
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "John Updated",
+      "email": "john.updated@example.com",
+      "phoneNumber": "+1234567890",
+      "userPrefix": "JU"
+    }

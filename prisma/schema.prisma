@@ -6,6 +6,12 @@ datasource db {
   provider = "postgresql"
 }
 
+/**
+ * ============================================================
+ * ENUMS
+ * ============================================================
+ */
+
 enum UserRole {
   SUPERADMIN
   ADMIN
@@ -30,94 +36,90 @@ enum ClientStatus {
   INACTIVE
 }
 
-model Client {
-  id               String       @id @default(uuid())
-
-  companyId        String
-  company          Company      @relation(fields: [companyId], references: [id])
-
-  companyName      String
-  companyAddress   String?
-
-  createdByUserId  String
-  createdBy        User         @relation("ClientCreatedBy", fields: [createdByUserId], references: [id])
-
-  status           ClientStatus @default(ACTIVE)
-
-  contacts         ClientContact[]
-  assignments      ClientAssignment[]
-
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-
-  @@index([companyId])
-  @@index([createdByUserId])
-  @@index([status])
-  @@index([companyName])
+enum QuotationStatus {
+  SENT
+  NEGOTIATION
+  SUCCESSFUL
+  LOST
+  EXPIRED
 }
 
-model ClientContact {
-  id        String   @id @default(uuid())
+enum QuotationSuccessType {
+  PO
+  JOB_TICKET
+}
 
-  clientId  String
-  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+enum QuotationWorkflowAction {
+  CREATED
+  SENT
+  FOLLOW_UP_SENT
+  NEW_VERSION
+  RESENT
+  SUCCESSFUL
+  LOST
+  EXPIRED
+}
 
-  name      String
-  phone     String?
-  email     String?
+enum QuotationFollowUpStatus {
+  PENDING
+  SENT
+  SKIPPED
+  CANCELLED
+}
+
+enum QuotationEmailType {
+  INITIAL
+  VERSION
+  FOLLOW_UP
+  RESEND
+}
+
+/**
+ * ============================================================
+ * COMPANY
+ * ============================================================
+ */
+
+model Company {
+  id String @id @default(uuid())
+
+  name            String  @unique
+  quotationPrefix String? @unique
+
+  logoUrl   String?
+  gstNumber String?
+  cinNumber String?
+  address   String?
+
+  emailFromName    String?
+  emailFromAddress String?
+
+  status CompanyStatus @default(ACTIVE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([clientId])
-}
-
-
-model ClientAssignment {
-  id           String   @id @default(uuid())
-
-  clientId     String
-  client       Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-
-  managerId    String
-  manager      User     @relation("ClientManagerAssignments", fields: [managerId], references: [id])
-
-  assignedById String
-  assignedBy   User     @relation("ClientAssignedBy", fields: [assignedById], references: [id])
-
-  createdAt    DateTime @default(now())
-
-  @@unique([clientId, managerId])
-  @@index([clientId])
-  @@index([managerId])
-  @@index([assignedById])
-}
-
-
-model Company {
-  id         String        @id @default(uuid())
-  name       String        @unique
-  logoUrl    String?
-  gstNumber  String?
-  cinNumber  String?
-  address    String?
-  status     CompanyStatus @default(ACTIVE)
-
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-
-  users User[]
-  clients Client[]
+  users              User[]
+  clients            Client[]
+  quotations         Quotation[]
+  quotationSequences QuotationSequence[]
 
   @@index([status])
 }
 
+/**
+ * ============================================================
+ * USER
+ * ============================================================
+ */
+
 model User {
-  id           String     @id @default(uuid())
+  id String @id @default(uuid())
+
   name         String?
-  email        String     @unique
+  email        String  @unique
   phoneNumber  String?
-  userPrefix   String?    @unique
+  userPrefix   String? @unique
   passwordHash String?
 
   role   UserRole
@@ -126,28 +128,63 @@ model User {
   emailVerified   Boolean   @default(false)
   emailVerifiedAt DateTime?
 
+  /**
+   * -------------------- Company --------------------
+   */
+
   companyId String?
   company   Company? @relation(fields: [companyId], references: [id])
+
+  /**
+   * -------------------- Admin Hierarchy --------------------
+   */
 
   adminId    String?
   admin      User?   @relation("AdminUsers", fields: [adminId], references: [id])
   adminUsers User[]  @relation("AdminUsers")
 
+  /**
+   * -------------------- Manager Hierarchy --------------------
+   */
+
   managerId String?
   manager   User?   @relation("ManagerEmployees", fields: [managerId], references: [id])
   employees User[]  @relation("ManagerEmployees")
 
-  clientsCreated Client[] @relation("ClientCreatedBy")
-  clientManagerAssignments ClientAssignment[] @relation("ClientManagerAssignments")
-  clientAssignmentsMade ClientAssignment[] @relation("ClientAssignedBy")
+  /**
+   * -------------------- Client Relations --------------------
+   */
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  lastLoginAt DateTime?
+  clientsCreated           Client[]           @relation("ClientCreatedBy")
+  clientManagerAssignments ClientAssignment[] @relation("ClientManagerAssignments")
+  clientAssignmentsMade    ClientAssignment[] @relation("ClientAssignedBy")
+
+  /**
+   * -------------------- Quotation Relations --------------------
+   */
+
+  quotationsCreated          Quotation[]                @relation("QuotationCreatedBy")
+  quotationWorkflowActions   QuotationWorkflowHistory[] @relation("QuotationWorkflowPerformedBy")
+  quotationEmailsSent        QuotationEmail[]           @relation("QuotationEmailSentBy")
+  quotationSequences         QuotationSequence[]
+  quotationVersionsGenerated QuotationVersion[]         @relation("QuotationVersionGeneratedBy")
+  quotationVersionsSent      QuotationVersion[]         @relation("QuotationVersionSentBy")
+
+  /**
+   * -------------------- Authentication --------------------
+   */
 
   passwordSetupTokens PasswordSetupToken[]
   passwordResetTokens PasswordResetToken[]
   refreshTokens       RefreshToken[]
+
+  /**
+   * -------------------- Timestamps --------------------
+   */
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lastLoginAt DateTime?
 
   @@index([companyId])
   @@index([adminId])
@@ -155,6 +192,413 @@ model User {
   @@index([role])
   @@index([status])
 }
+
+/**
+ * ============================================================
+ * CLIENT
+ * ============================================================
+ */
+
+model Client {
+  id String @id @default(uuid())
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  companyName    String
+  companyAddress String?
+
+  createdByUserId String
+  createdBy       User   @relation("ClientCreatedBy", fields: [createdByUserId], references: [id])
+
+  status ClientStatus @default(ACTIVE)
+
+  contacts    ClientContact[]
+  assignments ClientAssignment[]
+  quotations  Quotation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([createdByUserId])
+  @@index([status])
+  @@index([companyName])
+}
+
+/**
+ * ============================================================
+ * CLIENT CONTACT
+ * ============================================================
+ */
+
+model ClientContact {
+  id String @id @default(uuid())
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  name  String
+  phone String?
+  email String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+}
+
+/**
+ * ============================================================
+ * CLIENT ASSIGNMENT
+ * ============================================================
+ */
+
+model ClientAssignment {
+  id String @id @default(uuid())
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  managerId String
+  manager   User   @relation("ClientManagerAssignments", fields: [managerId], references: [id])
+
+  assignedById String
+  assignedBy   User   @relation("ClientAssignedBy", fields: [assignedById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([clientId, managerId])
+  @@index([clientId])
+  @@index([managerId])
+  @@index([assignedById])
+}
+
+/**
+ * ============================================================
+ * QUOTATION
+ * ============================================================
+ */
+
+model Quotation {
+  id String @id @default(uuid())
+
+  /**
+   * Permanent quotation number.
+   * Example:
+   * MP-QTS-HP-001-2026
+   * This remains unchanged across all versions.
+   */
+  quotationNumber String @unique
+
+  /**
+   * -------------------- Company --------------------
+   */
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  /**
+   * -------------------- Creator --------------------
+   */
+
+  createdByUserId String
+  createdBy       User   @relation("QuotationCreatedBy", fields: [createdByUserId], references: [id])
+
+  /**
+   * -------------------- Client --------------------
+   */
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  /**
+   * -------------------- Status --------------------
+   */
+
+  /**
+   * No DRAFT.
+   * First successful send:
+   * SENT
+   * Create new version:
+   * NEGOTIATION
+   * Final states:
+   * SUCCESSFUL
+   * LOST
+   * EXPIRED
+   */
+  status QuotationStatus
+
+  /**
+   * -------------------- Numbering --------------------
+   */
+
+  quotationYear  Int
+  yearlySequence Int
+
+  /**
+   * -------------------- Tracking --------------------
+   */
+
+  expectedPODate DateTime?
+  expiryDate     DateTime?
+  followUpDays   Int?
+
+  followUpCount  Int       @default(0)
+  nextFollowUpAt DateTime?
+
+  /**
+   * -------------------- Successful --------------------
+   */
+
+  successfulType      QuotationSuccessType?
+  successfulReference String?
+
+  successfulJobTicketId String?
+successfulPONumber    String?
+
+  /**
+   * -------------------- Lost --------------------
+   */
+
+  lostRemarks String?
+
+  /**
+   * -------------------- Latest Version --------------------
+   */
+
+  latestVersionNumber Int @default(1)
+
+  /**
+   * -------------------- Timestamps --------------------
+   */
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /**
+   * -------------------- Relations --------------------
+   */
+
+  versions        QuotationVersion[]
+  workflowHistory QuotationWorkflowHistory[]
+  followUps       QuotationFollowUp[]
+  emails          QuotationEmail[]
+
+  @@index([companyId])
+  @@index([createdByUserId])
+  @@index([clientId])
+  @@index([status])
+  @@index([quotationYear])
+  @@index([expiryDate])
+  @@index([nextFollowUpAt])
+}
+
+/**
+ * ============================================================
+ * QUOTATION VERSION
+ * ============================================================
+ */
+
+model QuotationVersion {
+  id String @id @default(uuid())
+
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  /**
+   * 1 = first sent quotation
+   * 2 = first new version
+   * 3 = second new version
+   * etc.
+   */
+  versionNumber Int
+
+  /**
+   * Complete dynamic payload required to regenerate
+   * the PDF on the frontend.
+   */
+  documentData Json
+
+  /**
+   * -------------------- Generation --------------------
+   */
+
+  generatedAt DateTime?
+
+  generatedByUserId String?
+  generatedByUser   User?   @relation("QuotationVersionGeneratedBy", fields: [generatedByUserId], references: [id])
+
+  /**
+   * -------------------- Sending --------------------
+   */
+
+  sentAt DateTime?
+
+  sentByUserId String?
+  sentBy       User?   @relation("QuotationVersionSentBy", fields: [sentByUserId], references: [id])
+
+ /**
+ * -------------------- Document Storage --------------------
+ */
+
+/**
+ * Stable storage URL for the PDF.
+ * Actual PDF is stored outside the database.
+ */
+documentUrl String?
+
+  /**
+   * -------------------- Timestamp --------------------
+   */
+
+  createdAt DateTime @default(now())
+
+  @@unique([quotationId, versionNumber])
+  @@index([quotationId])
+  @@index([generatedAt])
+  @@index([sentAt])
+}
+
+/**
+ * ============================================================
+ * QUOTATION WORKFLOW HISTORY
+ * ============================================================
+ */
+
+model QuotationWorkflowHistory {
+  id String @id @default(uuid())
+
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  action QuotationWorkflowAction
+
+  fromStatus QuotationStatus?
+  toStatus   QuotationStatus?
+
+  versionNumber Int?
+
+  remarks  String?
+  metadata Json?
+
+  performedByUserId String?
+  performedBy       User?   @relation("QuotationWorkflowPerformedBy", fields: [performedByUserId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([quotationId])
+  @@index([performedByUserId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+/**
+ * ============================================================
+ * QUOTATION FOLLOW-UP
+ * ============================================================
+ */
+
+model QuotationFollowUp {
+  id String @id @default(uuid())
+
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  /**
+   * Example:
+   * 1
+   * 2
+   * 3
+   */
+  cycleNumber Int
+
+  scheduledAt DateTime
+  sentAt      DateTime?
+
+  status QuotationFollowUpStatus @default(PENDING)
+
+  recipientEmail String?
+  subject        String?
+  body           String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([quotationId, cycleNumber])
+  @@index([quotationId])
+  @@index([scheduledAt])
+  @@index([status])
+}
+
+/**
+ * ============================================================
+ * QUOTATION EMAIL
+ * ============================================================
+ */
+
+model QuotationEmail {
+  id String @id @default(uuid())
+
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  versionNumber Int
+
+  type QuotationEmailType
+
+  toEmail String
+  ccEmail String?
+
+  subject String
+  body    String
+
+  sentAt DateTime?
+
+  sentByUserId String
+  sentBy       User   @relation("QuotationEmailSentBy", fields: [sentByUserId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([quotationId])
+  @@index([sentByUserId])
+  @@index([sentAt])
+}
+
+/**
+ * ============================================================
+ * QUOTATION SEQUENCE
+ * ============================================================
+ */
+
+model QuotationSequence {
+  id String @id @default(uuid())
+
+  /**
+   * Sequence is independent for:
+   * company + user + year
+   */
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  year Int
+
+  lastNumber Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, userId, year])
+}
+
+/**
+ * ============================================================
+ * PASSWORD SETUP TOKEN
+ * ============================================================
+ */
 
 model PasswordSetupToken {
   id String @id @default(uuid())
@@ -173,6 +617,12 @@ model PasswordSetupToken {
   @@index([expiresAt])
 }
 
+/**
+ * ============================================================
+ * PASSWORD RESET TOKEN
+ * ============================================================
+ */
+
 model PasswordResetToken {
   id String @id @default(uuid())
 
@@ -190,6 +640,12 @@ model PasswordResetToken {
   @@index([expiresAt])
 }
 
+/**
+ * ============================================================
+ * REFRESH TOKEN
+ * ============================================================
+ */
+
 model RefreshToken {
   id String @id @default(uuid())
 
@@ -206,6 +662,12 @@ model RefreshToken {
   @@index([userId])
   @@index([expiresAt])
 }
+
+/**
+ * ============================================================
+ * AUDIT LOG
+ * ============================================================
+ */
 
 model AuditLog {
   id String @id @default(uuid())

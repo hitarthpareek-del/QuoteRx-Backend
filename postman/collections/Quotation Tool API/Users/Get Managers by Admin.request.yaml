@@ -1,0 +1,12 @@
+$kind: http-request
+name: Get Managers by Admin
+order: 7000
+method: GET
+url: '{{baseUrl}}/api/users/managers'
+queryParams:
+  - key: companyId
+    value: company-id-here
+    description: Required - company ID
+  - key: adminId
+    value: admin-id-here
+    description: Required - admin ID

@@ -1,0 +1,18 @@
+$kind: http-request
+name: Get All Users
+order: 1000
+method: GET
+url: '{{baseUrl}}/api/users'
+queryParams:
+  - key: role
+    value: ADMIN
+    disabled: true
+    description: 'Filter by role: SUPERADMIN, ADMIN, MANAGER, EMPLOYEE'
+  - key: status
+    value: ACTIVE
+    disabled: true
+    description: 'Filter by status: ACTIVE, INACTIVE, PENDING'
+  - key: companyId
+    value: ''
+    disabled: true
+    description: Filter by company ID
