@@ -167,7 +167,7 @@ async function logout(req, res) {
 
 async function me(req, res) {
   try {
-    const user = await require("../lib/prisma").user.findUnique({
+    const user = await require("../../../lib/prisma").user.findUnique({
       where: {
         id: req.user.id
       },

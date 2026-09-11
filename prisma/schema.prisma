@@ -355,7 +355,7 @@ model Quotation {
   successfulReference String?
 
   successfulJobTicketId String?
-successfulPONumber    String?
+  successfulPONumber    String?
 
   /**
    * -------------------- Lost --------------------
